@@ -1,725 +1,506 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VocabFlash - Learn & Master</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-    
-    <!-- KaTeX pour le support LaTeX -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        glass: {
-                            light: 'rgba(255, 255, 255, 0.7)',
-                            dark: 'rgba(30, 30, 30, 0.7)'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VocabFlash – Flashcards</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== Tokens (charte Modern File Explorer) ===== */
+:root{
+  --bg-a:#0f172a; --bg-b:#1e293b;
+  --gs:rgba(17,24,39,.6); --gs-hover:rgba(55,65,81,.7);
+  --tx:#f3f4f6; --tx-2:#9ca3af; --tx-3:#4b5563;
+  --bd:rgba(255,255,255,.05); --line:#374151; --pill:#1f2937;
+  --accent:#3b82f6; --accent-2:#2563eb; --accent-soft:rgba(30,58,138,.3); --accent-bd:#3b82f6;
+  --ok:#22c55e; --ko:#ef4444; --warn:#f5a524; --ok-solid:#22c55e; --ko-solid:#ef4444;
+  --card-front:#1f2937; --card-back:#111827; --card-bd:#374151; --card-back-bd:#1e40af; --blue-txt:#60a5fa;
+  --sh-sm:0 1px 2px rgba(0,0,0,.30); --sh-md:0 4px 30px rgba(0,0,0,.10); --sh-lg:0 25px 50px -12px rgba(0,0,0,.50);
+  --r:12px; --rx:24px; --tr:.2s ease;
+  --font:'Inter',sans-serif; --mono:'Inter',sans-serif;
+}
+body.light{
+  --bg-a:#f1f5f9; --bg-b:#e2e8f0;
+  --gs:rgba(255,255,255,.6); --gs-hover:#e5e7eb;
+  --tx:#1f2937; --tx-2:#6b7280; --tx-3:#d1d5db;
+  --bd:rgba(255,255,255,.5); --line:#e5e7eb; --pill:#e5e7eb;
+  --accent-soft:#dbeafe;
+  --card-front:#ffffff; --card-back:#eff6ff; --card-bd:#f3f4f6; --card-back-bd:#bfdbfe; --blue-txt:#2563eb;
+  --sh-sm:0 1px 2px rgba(0,0,0,.08); --sh-md:0 8px 32px rgba(31,38,135,.10); --sh-lg:0 25px 50px -12px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);color:var(--tx);min-height:calc(100vh / 1.1);zoom:1.1;
+  background:linear-gradient(135deg,var(--bg-a) 0%,var(--bg-b) 100%) fixed;
+  transition:background var(--tr),color var(--tr);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:none}
+.hidden{display:none!important}
 
-    <style>
-        body {
-            transition: background-color 0.3s ease, color 0.3s ease;
-            /* Default background for dark mode */
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            min-height: 100vh;
-            background-attachment: fixed;
-        }
+/* ===== Verre dépoli ===== */
+.glass{background:var(--gs);border:1px solid var(--bd);border-radius:var(--rx);box-shadow:var(--sh-md);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.topbar{position:fixed;top:8px;left:50%;transform:translateX(-50%);width:100%;max-width:1024px;z-index:50;border-bottom:0;border-radius:0 0 16px 16px;
+  display:flex;justify-content:space-between;align-items:center;padding:12px 18px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:600;font-size:1.15rem;letter-spacing:-.01em}
+.logo{width:34px;height:34px;border-radius:50%;background:#3b82f6;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.95rem}
+.icon-btn{width:38px;height:38px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;color:var(--tx-2);transition:var(--tr)}
+.icon-btn:hover{background:var(--gs-hover);color:var(--tx)}
+#themeToggle .sun{display:none} body.light #themeToggle .sun{display:inline} body.light #themeToggle .moon{display:none}
 
-        html:not(.dark) body {
-            /* Background for light mode */
-            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-        }
+main{min-height:calc(100vh / 1.1);padding:96px 16px 40px;display:flex;flex-direction:column;align-items:center;justify-content:center;max-width:1000px;margin:0 auto}
+section{width:100%;display:flex;flex-direction:column;align-items:center}
+.fade{animation:fade .4s ease-out forwards}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
-        /* Glassmorphism Utilities */
-        .glass-panel {
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-        }
+h2{font-weight:600;letter-spacing:-.01em}
+.muted{color:var(--tx-2)} .mono{font-family:var(--mono)}
+.label{display:block;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--tx-2);margin-bottom:12px}
 
-        html:not(.dark) .glass-panel {
-            background-color: rgba(255, 255, 255, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
-        }
-        
-        html.dark .glass-panel {
-            background-color: rgba(17, 24, 39, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
+/* ===== Boutons ===== */
+.btn{padding:12px 32px;border-radius:var(--r);font-weight:600;transition:var(--tr)}
+.btn-primary{background:#2563eb;color:#fff;box-shadow:0 10px 15px -3px rgba(59,130,246,.30)}
+.btn-primary:hover{background:#1d4ed8;transform:scale(1.05)}
+.btn-purple{background:#9333ea;color:#fff;box-shadow:0 10px 15px -3px rgba(168,85,247,.30)}
+.btn-purple:hover{background:#7e22ce;transform:scale(1.05)}
+.btn-ghost{background:var(--gs);border:1px solid var(--bd);box-shadow:var(--sh-sm)}
+.btn-ghost:hover{background:var(--gs-hover);border-color:var(--accent-bd)}
+.btn-link{color:var(--tx-2);text-decoration:underline;text-underline-offset:4px;font-weight:500;padding:12px 14px}
+.btn-link:hover{color:var(--tx)}
 
-        /* Card Flip Animations */
-        .perspective-1000 {
-            perspective: 1000px;
-        }
+/* ===== Import ===== */
+#view-import{max-width:460px;padding:36px 32px;text-align:center}
+.big-icon{width:64px;height:64px;border-radius:16px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin-bottom:22px}
+.drop{display:block;width:100%;margin-top:26px;border:2px dashed var(--tx-3);border-radius:var(--rx);padding:30px 20px;cursor:pointer;transition:var(--tr)}
+.drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop i{font-size:1.8rem;color:var(--tx-2);margin-bottom:10px;transition:var(--tr)}
+.drop:hover i,.drop.over i{color:var(--accent)}
+.drop small{display:block;margin-top:8px;font-family:var(--mono);font-size:.72rem;color:var(--tx-2)}
+#importError{margin-top:16px;color:var(--ko);font-size:.85rem;font-weight:500}
 
-        .card-inner {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
-            transform-style: preserve-3d;
-        }
+/* ===== Réglages ===== */
+#view-settings{max-width:560px;padding:32px;align-items:stretch}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+@media(max-width:480px){.grid5{grid-template-columns:repeat(3,1fr)}}
+.opt input{position:absolute;opacity:0;pointer-events:none}
+.opt{position:relative;cursor:pointer;display:block}
+.opt div{padding:11px 8px;text-align:center;border-radius:12px;border:1px solid var(--line);background:var(--gs);font-weight:500;transition:var(--tr)}
+.opt:hover div{border-color:var(--accent-bd)}
+.opt input:checked+div{background:#3b82f6;border-color:#3b82f6;color:#fff}
+.opt.rnd input:checked+div{background:#a855f7;border-color:#a855f7}
+.opt.num input:checked+div{background:#1f2937;border-color:#1f2937;color:#fff}
+body:not(.light) .opt.num input:checked+div{background:#f3f4f6;border-color:#f3f4f6;color:#111827}
+.opt input:focus-visible+div{outline:2px solid var(--accent);outline-offset:2px}
+.field{margin-bottom:26px}
+.custom{display:flex;align-items:center;gap:12px;margin-top:12px;font-size:.85rem}
+.custom input{width:96px;padding:9px 12px;border-radius:var(--r);border:1px solid var(--line);background:transparent;color:var(--tx);font-family:var(--mono);outline:none;transition:var(--tr)}
+.custom input:focus{border-color:var(--accent)}
+.custom input::placeholder{color:var(--tx-3)}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding-top:20px;border-top:1px solid var(--line)}
+.foot span{font-family:var(--mono);font-size:.82rem}
 
-        .card-inner.is-flipped {
-            transform: rotateY(180deg);
-        }
+/* ===== Flashcard ===== */
+#view-flashcard{max-width:720px}
+.bar{width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:0 4px}
+.pill{font-family:var(--mono);font-size:.8rem;color:var(--tx-2);background:var(--pill);padding:6px 14px;border-radius:999px;box-shadow:inset 0 2px 4px rgba(0,0,0,.08)}
+kbd{font-family:var(--mono);font-size:.72rem;background:var(--pill);padding:3px 8px;border-radius:6px}
+.hint{font-size:.78rem;color:var(--tx-2)}
 
-        .card-face {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            text-align: center;
-            border-radius: 1.5rem;
-        }
+.scene{width:100%;aspect-ratio:16/9;perspective:1200px;cursor:pointer;margin-bottom:28px}
+@media(max-width:640px){.scene{aspect-ratio:4/3}}
+.inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.4,0,.2,1)}
+.inner.flipped{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;border-radius:32px;border:1px solid var(--card-bd);box-shadow:var(--sh-lg);
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}
+.front{background:var(--card-front)}
+.back{background:var(--card-back);border-color:var(--card-back-bd);transform:rotateY(180deg)}
+.tag{position:absolute;top:16px;left:22px;font-family:var(--mono);font-size:.72rem;font-weight:500;text-transform:uppercase;letter-spacing:.12em;color:var(--tx-2)}
+.back .tag{color:#60a5fa}
+.warn{position:absolute;top:12px;right:16px;display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.68rem;font-weight:500;
+  color:var(--warn);background:rgba(245,165,36,.12);border:1px solid rgba(245,165,36,.45);padding:4px 9px;border-radius:999px;cursor:help}
 
-        .card-back {
-            transform: rotateY(180deg);
-        }
+/* Zone de texte : marge de confort entre le texte et le bord de la carte */
+.wrap{position:absolute;inset:52px 40px 40px 40px;display:flex;overflow:hidden}
+.wrap.scroll{overflow-y:auto}
+.txt{margin:auto;width:100%;text-align:center;font-weight:600;line-height:1.25;letter-spacing:-.01em;overflow-wrap:anywhere;word-break:break-word}
+.back .txt{color:var(--blue-txt)}
+.txt .katex-display{margin:.25em 0}
+.txt .katex{max-width:100%}
+/* LaTeX mal rédigé : garde la couleur normale, signalé par un souligné discret */
+.txt .katex-error{color:inherit!important;text-decoration:underline wavy var(--warn);text-underline-offset:5px;font-family:var(--mono);font-size:.8em}
 
-        /* Hide elements gracefully */
-        .hidden-view {
-            display: none !important;
-        }
-        
-        /* Custom scrollbar for stats */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background-color: rgba(156, 163, 175, 0.5);
-            border-radius: 20px;
-        }
+.actions{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;width:100%}
+.nav{width:56px;height:56px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.nav:disabled{opacity:.3;cursor:not-allowed}
+.verdict{flex:1;max-width:150px;padding:16px 24px;border-radius:16px;font-weight:700;font-size:1.125rem;border:1px solid;box-shadow:0 1px 2px rgba(0,0,0,.08);transition:background-color var(--tr)}
+.verdict.ko{background:rgba(127,29,29,.30);color:#f87171;border-color:rgba(153,27,27,.50)}
+.verdict.ko:hover{background:rgba(127,29,29,.50)}
+.verdict.ok{background:rgba(20,83,45,.30);color:#4ade80;border-color:rgba(22,101,52,.50)}
+.verdict.ok:hover{background:rgba(20,83,45,.50)}
+body.light .verdict.ko{background:#fee2e2;color:#dc2626;border-color:#fecaca}
+body.light .verdict.ko:hover{background:#fecaca}
+body.light .verdict.ok{background:#dcfce7;color:#16a34a;border-color:#bbf7d0}
+body.light .verdict.ok:hover{background:#bbf7d0}
+#btnEndEarly{margin-top:26px;font-size:.85rem}
 
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-            animation: fadeIn 0.4s ease-out forwards;
-        }
-    </style>
+/* ===== Bilan ===== */
+#view-stats{max-width:900px}
+.score{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;margin:24px 0 28px}
+.score .glass{padding:22px;text-align:center}
+.score .glass.g{border-top:4px solid var(--ok)} .score .glass.r{border-top:4px solid var(--ko)}
+.score b{display:block;font-family:var(--mono);font-size:2.4rem;font-weight:500;margin-top:4px}
+.lists{display:grid;grid-template-columns:1fr 1fr;gap:20px;width:100%;margin-bottom:32px}
+@media(max-width:700px){.lists{grid-template-columns:1fr}}
+.list{padding:18px;display:flex;flex-direction:column;max-height:380px}
+.list h3{font-size:1rem;font-weight:600;margin-bottom:12px}
+.list .body{overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;padding-right:6px}
+.item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 14px;border-radius:var(--r);font-size:.88rem;border:1px solid var(--line)}
+.item .a{font-weight:600} .item .b{opacity:.8;text-align:right}
+.item.g{background:#f0fdf4;border-color:#dcfce7;color:#166534}
+.item.r{background:#fef2f2;border-color:#fee2e2;color:#991b1b}
+body:not(.light) .item.g{background:rgba(20,83,45,.10);border-color:rgba(20,83,45,.30);color:#bbf7d0}
+body:not(.light) .item.r{background:rgba(127,29,29,.10);border-color:rgba(127,29,29,.30);color:#fecaca}
+.empty{color:var(--tx-2);font-size:.85rem;font-style:italic;padding:6px 0}
+.body::-webkit-scrollbar{width:6px}.body::-webkit-scrollbar-thumb{background:var(--tx-3);border-radius:20px}
+.row{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
+</style>
 </head>
-<body class="text-gray-800 dark:text-gray-100 antialiased overflow-x-hidden">
+<body class="light">
 
-    <nav class="fixed top-0 w-full z-50 p-4 flex justify-between items-center glass-panel border-b-0 rounded-b-2xl max-w-5xl left-1/2 -translate-x-1/2 mt-2 shadow-sm">
-        <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
-                <i class="fa-solid fa-layer-group"></i>
-            </div>
-            <span class="font-bold text-xl tracking-tight">VocabFlash</span>
+<header class="topbar glass">
+  <div class="brand"><div class="logo"><i class="fa-solid fa-layer-group"></i></div>VocabFlash</div>
+  <button id="themeToggle" class="icon-btn" title="Changer de thème" aria-label="Changer de thème">
+    <i class="fa-solid fa-moon moon"></i><i class="fa-solid fa-sun sun"></i>
+  </button>
+</header>
+
+<main>
+  <!-- Import -->
+  <section id="view-import" class="glass fade">
+    <div class="big-icon"><i class="fa-solid fa-file-excel"></i></div>
+    <h2 style="font-size:1.6rem;margin-bottom:8px">Importer un fichier</h2>
+    <p class="muted" style="font-size:.88rem">Déposez un fichier Excel ou CSV avec 2 colonnes : les questions dans la première, les réponses dans la seconde.</p>
+    <label for="fileInput" class="drop" id="drop">
+      <i class="fa-solid fa-cloud-arrow-up"></i>
+      <p style="font-weight:500">Cliquez pour parcourir ou glissez un fichier ici</p>
+      <small>.xlsx · .xls · .xlsb · .csv</small>
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.xlsb,.csv" class="hidden">
+    </label>
+    <div id="importError" class="hidden"></div>
+  </section>
+
+  <!-- Réglages -->
+  <section id="view-settings" class="glass hidden">
+    <h2 style="font-size:1.6rem;margin-bottom:26px">Réglages du paquet</h2>
+    <div class="field">
+      <span class="label">Face affichée en premier</span>
+      <div class="grid3">
+        <label class="opt"><input type="radio" name="frontSide" value="q" checked><div>Question</div></label>
+        <label class="opt"><input type="radio" name="frontSide" value="r"><div>Réponse</div></label>
+        <label class="opt rnd"><input type="radio" name="frontSide" value="random"><div>Aléatoire</div></label>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label">Nombre de cartes</span>
+      <div class="grid5">
+        <label class="opt num"><input type="radio" name="cardLimit" value="5"><div class="mono">5</div></label>
+        <label class="opt num"><input type="radio" name="cardLimit" value="10" checked><div class="mono">10</div></label>
+        <label class="opt num"><input type="radio" name="cardLimit" value="20"><div class="mono">20</div></label>
+        <label class="opt num"><input type="radio" name="cardLimit" value="50"><div class="mono">50</div></label>
+        <label class="opt num"><input type="radio" name="cardLimit" value="all"><div>Tout</div></label>
+      </div>
+      <div class="custom"><span class="muted">Ou un nombre précis :</span><input type="number" id="customLimit" min="1" placeholder="ex. 15"></div>
+    </div>
+    <div class="foot">
+      <span id="totalWordsLoaded" class="muted">0 carte chargée</span>
+      <button id="startBtn" class="btn btn-primary">Commencer <i class="fa-solid fa-arrow-right" style="margin-left:8px"></i></button>
+    </div>
+  </section>
+
+  <!-- Flashcard -->
+  <section id="view-flashcard" class="hidden">
+    <div class="bar">
+      <span class="pill">Carte <span id="currentCardCount">1</span> / <span id="totalSessionCards">10</span></span>
+      <span class="hint"><kbd>Espace</kbd> pour retourner</span>
+    </div>
+
+    <div class="scene" id="flashcardContainer">
+      <div class="inner" id="cardInner">
+        <div class="face front">
+          <span class="tag" id="cardFrontLang">Quest</span>
+          <span class="warn hidden" id="cardFrontWarn" title="Le LaTeX de cette face semble mal rédigé"><i class="fa-solid fa-triangle-exclamation"></i>LaTeX</span>
+          <div class="wrap"><div class="txt" id="cardFrontText"></div></div>
         </div>
-        <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors w-10 h-10 flex items-center justify-center">
-            <i class="fa-solid fa-moon dark:hidden"></i>
-            <i class="fa-solid fa-sun hidden dark:block"></i>
-        </button>
-    </nav>
+        <div class="face back">
+          <span class="tag" id="cardBackLang">Rep</span>
+          <span class="warn hidden" id="cardBackWarn" title="Le LaTeX de cette face semble mal rédigé"><i class="fa-solid fa-triangle-exclamation"></i>LaTeX</span>
+          <div class="wrap"><div class="txt" id="cardBackText"></div></div>
+        </div>
+      </div>
+    </div>
 
-    <main class="pt-28 pb-12 px-4 min-h-screen flex flex-col items-center justify-center max-w-5xl mx-auto">
-        
-        <section id="view-import" class="w-full max-w-md glass-panel rounded-3xl p-8 animate-fade-in flex flex-col items-center text-center">
-            <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-blue-500 rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-inner">
-                <i class="fa-solid fa-file-excel"></i>
-            </div>
-            <h2 class="text-2xl font-bold mb-2">Import Vocabulary</h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-8">Upload an Excel (.xlsx, .xlsb) or CSV file with 2 columns: English & French.</p>
-            
-            <label for="fileInput" class="w-full cursor-pointer group">
-                <div class="w-full border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-8 transition-all group-hover:border-blue-500 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/10">
-                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-3 group-hover:text-blue-500 transition-colors"></i>
-                    <p class="font-medium">Click to browse or drag file here</p>
-                    <p class="text-xs text-gray-400 mt-2">.xlsx, .xls, .xlsb, .csv allowed</p>
-                </div>
-                <input type="file" id="fileInput" accept=".xlsx, .xls, .xlsb, .csv" class="hidden">
-            </label>
-            <div id="importError" class="mt-4 text-red-500 text-sm hidden font-medium"></div>
-        </section>
+    <div class="actions">
+      <button id="btnPrev" class="nav btn-ghost glass" style="border-radius:var(--r)" aria-label="Précédente"><i class="fa-solid fa-chevron-left"></i></button>
+      <button id="btnIncorrect" class="verdict ko"><i class="fa-solid fa-xmark" style="margin-right:8px"></i>Faux</button>
+      <button id="btnCorrect" class="verdict ok"><i class="fa-solid fa-check" style="margin-right:8px"></i>Vrai</button>
+      <button id="btnNext" class="nav btn-ghost glass" style="border-radius:var(--r)" aria-label="Suivante"><i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+    <button id="btnEndEarly" class="btn-link">Terminer la session</button>
+  </section>
 
-        <section id="view-settings" class="w-full max-w-lg glass-panel rounded-3xl p-8 hidden-view flex flex-col items-center">
-            <h2 class="text-2xl font-bold mb-6 w-full text-left">Deck Settings</h2>
-            
-            <div class="w-full space-y-6">
-                <!-- Front Side Selection -->
-                <div class="space-y-3">
-                    <label class="block text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">First side to show</label>
-                    <div class="grid grid-cols-3 gap-3">
-                        <label class="cursor-pointer relative">
-                            <input type="radio" name="frontSide" value="en" class="peer sr-only" checked>
-                            <div class="p-3 text-center rounded-xl border border-gray-200 dark:border-gray-700 peer-checked:bg-blue-500 peer-checked:border-blue-500 peer-checked:text-white transition-all">English</div>
-                        </label>
-                        <label class="cursor-pointer relative">
-                            <input type="radio" name="frontSide" value="fr" class="peer sr-only">
-                            <div class="p-3 text-center rounded-xl border border-gray-200 dark:border-gray-700 peer-checked:bg-blue-500 peer-checked:border-blue-500 peer-checked:text-white transition-all">French</div>
-                        </label>
-                        <label class="cursor-pointer relative">
-                            <input type="radio" name="frontSide" value="random" class="peer sr-only">
-                            <div class="p-3 text-center rounded-xl border border-gray-200 dark:border-gray-700 peer-checked:bg-purple-500 peer-checked:border-purple-500 peer-checked:text-white transition-all">Random</div>
-                        </label>
-                    </div>
-                </div>
+  <!-- Bilan -->
+  <section id="view-stats" class="hidden">
+    <div style="text-align:center">
+      <h2 style="font-size:1.9rem;margin-bottom:6px">Session terminée 🎉</h2>
+      <p class="muted">Voici votre bilan.</p>
+    </div>
+    <div class="score">
+      <div class="glass g"><span class="label" style="margin:0">Maîtrisées</span><b id="statCorrectCount" style="color:var(--ok)">0</b></div>
+      <div class="glass r"><span class="label" style="margin:0">À revoir</span><b id="statIncorrectCount" style="color:var(--ko)">0</b></div>
+    </div>
+    <div class="lists">
+      <div class="glass list"><h3 style="color:var(--ok)"><i class="fa-solid fa-circle-check" style="margin-right:8px"></i>Réussies</h3><div id="listCorrect" class="body"></div></div>
+      <div class="glass list"><h3 style="color:var(--ko)"><i class="fa-solid fa-circle-xmark" style="margin-right:8px"></i>À retravailler</h3><div id="listIncorrect" class="body"></div></div>
+    </div>
+    <div class="row">
+      <button id="btnRetryIncorrect" class="btn btn-purple hidden"><i class="fa-solid fa-rotate-right" style="margin-right:8px"></i>Refaire les erreurs</button>
+      <button id="btnRestartFull" class="btn btn-ghost">Nouvelle série</button>
+      <button id="btnNewFile" class="btn-link">Importer un autre fichier</button>
+    </div>
+  </section>
+</main>
 
-                <!-- Number of Cards Selection -->
-                <div class="space-y-3">
-                    <label class="block text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Number of cards</label>
-                    <div class="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                        <label class="cursor-pointer">
-                            <input type="radio" name="cardLimit" value="5" class="peer sr-only">
-                            <div class="p-2 text-center rounded-lg border border-gray-200 dark:border-gray-700 peer-checked:bg-gray-800 peer-checked:text-white dark:peer-checked:bg-gray-100 dark:peer-checked:text-gray-900 transition-all font-medium">5</div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="cardLimit" value="10" class="peer sr-only" checked>
-                            <div class="p-2 text-center rounded-lg border border-gray-200 dark:border-gray-700 peer-checked:bg-gray-800 peer-checked:text-white dark:peer-checked:bg-gray-100 dark:peer-checked:text-gray-900 transition-all font-medium">10</div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="cardLimit" value="20" class="peer sr-only">
-                            <div class="p-2 text-center rounded-lg border border-gray-200 dark:border-gray-700 peer-checked:bg-gray-800 peer-checked:text-white dark:peer-checked:bg-gray-100 dark:peer-checked:text-gray-900 transition-all font-medium">20</div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="cardLimit" value="50" class="peer sr-only">
-                            <div class="p-2 text-center rounded-lg border border-gray-200 dark:border-gray-700 peer-checked:bg-gray-800 peer-checked:text-white dark:peer-checked:bg-gray-100 dark:peer-checked:text-gray-900 transition-all font-medium">50</div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="cardLimit" value="all" class="peer sr-only">
-                            <div class="p-2 text-center rounded-lg border border-gray-200 dark:border-gray-700 peer-checked:bg-gray-800 peer-checked:text-white dark:peer-checked:bg-gray-100 dark:peer-checked:text-gray-900 transition-all font-medium">All</div>
-                        </label>
-                    </div>
-                    <div class="mt-2 flex items-center gap-3">
-                        <span class="text-sm text-gray-500">Or custom:</span>
-                        <input type="number" id="customLimit" min="1" placeholder="e.g. 15" class="bg-transparent border border-gray-300 dark:border-gray-600 rounded-lg p-2 w-24 focus:outline-none focus:border-blue-500">
-                    </div>
-                </div>
+<script>
+/* ===== État ===== */
+let allVocab = [], currentSession = [], currentIndex = 0, isFlipped = false;
+let sessionResults = { correct: [], incorrect: [] };
 
-                <div class="pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                    <span id="totalWordsLoaded" class="text-sm text-gray-500">0 words loaded</span>
-                    <button id="startBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-xl shadow-lg shadow-blue-500/30 transition-all transform hover:scale-105 active:scale-95">
-                        Start Learning <i class="fa-solid fa-arrow-right ml-2"></i>
-                    </button>
-                </div>
-            </div>
-        </section>
+const $ = id => document.getElementById(id);
+const views = { import: $('view-import'), settings: $('view-settings'), flashcard: $('view-flashcard'), stats: $('view-stats') };
+const cardInner = $('cardInner');
+const faces = [
+  { text: $('cardFrontText'), tag: $('cardFrontLang'), warn: $('cardFrontWarn') },
+  { text: $('cardBackText'),  tag: $('cardBackLang'),  warn: $('cardBackWarn') }
+];
+const plural = (n, s, p) => n > 1 ? p : s;
 
-        <section id="view-flashcard" class="w-full max-w-2xl hidden-view flex flex-col items-center">
-            
-            <div class="w-full flex justify-between items-center mb-6 px-4">
-                <span class="text-sm font-medium text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-800 px-3 py-1 rounded-full shadow-inner">
-                    Card <span id="currentCardCount">1</span> / <span id="totalSessionCards">10</span>
-                </span>
-                <span class="text-xs text-gray-400"><kbd class="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">Space</kbd> to flip</span>
-            </div>
+/* ===== LaTeX ===== */
+function autoFormatLatex(text) {
+  text = String(text || '');
+  if ((text.includes('\\') || text.includes('^') || text.includes('_')) && !text.includes('$') && !text.includes('\\(') && !text.includes('\\[')) {
+    return `$$${text}$$`;
+  }
+  return text;
+}
+const KATEX_OPTS = {
+  delimiters: [
+    { left: '$$', right: '$$', display: true },
+    { left: '$', right: '$', display: false },
+    { left: '\\(', right: '\\)', display: false },
+    { left: '\\[', right: '\\]', display: true }
+  ],
+  throwOnError: false,
+  errorColor: 'currentColor'   // plus de rouge : la couleur reste celle du texte
+};
+function renderLatex(el) { if (window.renderMathInElement) renderMathInElement(el, KATEX_OPTS); }
 
-            <!-- The Card -->
-            <div class="perspective-1000 w-full aspect-[4/3] sm:aspect-[16/9] mb-8 cursor-pointer" id="flashcardContainer">
-                <div class="card-inner rounded-[2rem]" id="cardInner">
-                    <!-- Front -->
-                    <div class="card-face rounded-[2rem] bg-white dark:bg-gray-800 shadow-2xl border border-gray-100 dark:border-gray-700">
-                        <h2 id="cardFrontText" class="text-4xl sm:text-5xl md:text-6xl font-bold text-center break-words w-full">Word</h2>
-                        <span id="cardFrontLang" class="absolute top-4 left-6 text-xs font-bold uppercase tracking-wider text-gray-400">English</span>
-                    </div>
-                    <!-- Back -->
-                    <div class="card-face card-back rounded-[2rem] bg-blue-50 dark:bg-gray-900 shadow-2xl border border-blue-200 dark:border-blue-800">
-                        <h2 id="cardBackText" class="text-4xl sm:text-5xl md:text-6xl font-bold text-center break-words w-full text-blue-600 dark:text-blue-400">Translation</h2>
-                        <span id="cardBackLang" class="absolute top-4 left-6 text-xs font-bold uppercase tracking-wider text-blue-400">French</span>
-                    </div>
-                </div>
-            </div>
+// Détecte un LaTeX mal rédigé : erreur de parsing KaTeX ou délimiteurs non fermés
+function hasLatexProblem(rawText, el) {
+  if (el.querySelector('.katex-error')) return true;
+  const t = String(rawText).replace(/\\\$/g, '').replace(/\$\$/g, '');
+  if ((t.match(/\$/g) || []).length % 2 === 1) return true;
+  const count = re => (rawText.match(re) || []).length;
+  return count(/\\\(/g) !== count(/\\\)/g) || count(/\\\[/g) !== count(/\\\]/g);
+}
 
-            <div class="flex flex-wrap justify-center gap-4 w-full">
-                <button id="btnPrev" class="p-4 rounded-2xl glass-panel hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors w-16 h-16 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed">
-                    <i class="fa-solid fa-chevron-left text-xl"></i>
-                </button>
-                
-                <button id="btnIncorrect" class="flex-1 max-w-[140px] py-4 px-6 rounded-2xl bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800/50 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors font-bold text-lg shadow-sm">
-                    <i class="fa-solid fa-xmark mr-2"></i> Incorrect
-                </button>
+/* ===== Ajustement automatique de la taille du texte ===== */
+const FONT_MIN = 12;
+function fitText(el) {
+  const wrap = el.parentElement;
+  if (!wrap.clientWidth) return;               // vue masquée
+  const max = wrap.clientWidth < 380 ? 26 : 38; // taille maximale autorisée
+  wrap.classList.remove('scroll');
+  let lo = FONT_MIN, hi = max;
+  while (lo < hi) {
+    const mid = Math.ceil((lo + hi) / 2);
+    el.style.fontSize = mid + 'px';
+    if (el.scrollHeight <= wrap.clientHeight && el.scrollWidth <= wrap.clientWidth) lo = mid; else hi = mid - 1;
+  }
+  el.style.fontSize = lo + 'px';
+  if (el.scrollHeight > wrap.clientHeight) wrap.classList.add('scroll'); // dernier recours
+}
+const fitAll = () => faces.forEach(f => fitText(f.text));
+new ResizeObserver(fitAll).observe($('flashcardContainer'));
+window.addEventListener('resize', fitAll);
+if (document.fonts) document.fonts.ready.then(fitAll);
 
-                <button id="btnCorrect" class="flex-1 max-w-[140px] py-4 px-6 rounded-2xl bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800/50 hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors font-bold text-lg shadow-sm">
-                    <i class="fa-solid fa-check mr-2"></i> Correct
-                </button>
+/* ===== Thème ===== */
+if (localStorage.getItem('vf-theme') === 'dark') document.body.classList.remove('light');
+$('themeToggle').addEventListener('click', () => {
+  document.body.classList.toggle('light');
+  localStorage.setItem('vf-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+});
 
-                <button id="btnNext" class="p-4 rounded-2xl glass-panel hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors w-16 h-16 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed">
-                    <i class="fa-solid fa-chevron-right text-xl"></i>
-                </button>
-            </div>
-            
-            <button id="btnEndEarly" class="mt-8 text-sm text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 underline underline-offset-4 transition-colors">
-                End session early
-            </button>
-        </section>
+function showView(name) {
+  Object.values(views).forEach(v => { v.classList.add('hidden'); v.classList.remove('fade'); });
+  views[name].classList.remove('hidden');
+  void views[name].offsetWidth;
+  views[name].classList.add('fade');
+}
+function shuffleArray(a) {
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
 
-        <section id="view-stats" class="w-full max-w-4xl hidden-view flex flex-col items-center animate-fade-in">
-            <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold mb-2">Session Complete! 🎉</h2>
-                <p class="text-gray-500 dark:text-gray-400">Here's how you did.</p>
-            </div>
+/* ===== Import ===== */
+const importError = $('importError'), totalLoaded = $('totalWordsLoaded');
 
-            <!-- Score Cards -->
-            <div class="grid grid-cols-2 gap-4 w-full mb-8">
-                <div class="glass-panel rounded-3xl p-6 text-center border-t-4 border-t-green-500">
-                    <p class="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Mastered</p>
-                    <p id="statCorrectCount" class="text-4xl font-bold text-green-500">0</p>
-                </div>
-                <div class="glass-panel rounded-3xl p-6 text-center border-t-4 border-t-red-500">
-                    <p class="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">To Review</p>
-                    <p id="statIncorrectCount" class="text-4xl font-bold text-red-500">0</p>
-                </div>
-            </div>
-
-            <!-- Lists -->
-            <div class="grid md:grid-cols-2 gap-6 w-full mb-10">
-                <!-- Correct List -->
-                <div class="glass-panel rounded-2xl p-4 flex flex-col max-h-96">
-                    <h3 class="font-bold text-lg mb-3 flex items-center text-green-600 dark:text-green-400">
-                        <i class="fa-solid fa-check-circle mr-2"></i> Correct Words
-                    </h3>
-                    <div id="listCorrect" class="overflow-y-auto custom-scrollbar flex-1 space-y-2 pr-2">
-                        <!-- Items injected here -->
-                    </div>
-                </div>
-
-                <!-- Incorrect List -->
-                <div class="glass-panel rounded-2xl p-4 flex flex-col max-h-96">
-                    <h3 class="font-bold text-lg mb-3 flex items-center text-red-600 dark:text-red-400">
-                        <i class="fa-solid fa-xmark-circle mr-2"></i> Needs Practice
-                    </h3>
-                    <div id="listIncorrect" class="overflow-y-auto custom-scrollbar flex-1 space-y-2 pr-2">
-                        <!-- Items injected here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Actions -->
-            <div class="flex flex-wrap gap-4 justify-center">
-                <button id="btnRetryIncorrect" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-8 rounded-xl shadow-lg shadow-purple-500/30 transition-all transform hover:scale-105 active:scale-95 hidden">
-                    <i class="fa-solid fa-rotate-right mr-2"></i> Retry Incorrect Only
-                </button>
-                <button id="btnRestartFull" class="glass-panel font-semibold py-3 px-8 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
-                    Start New Round
-                </button>
-                <button id="btnNewFile" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 font-medium py-3 px-4 underline underline-offset-4">
-                    Import different file
-                </button>
-            </div>
-        </section>
-
-    </main>
-
-    <script>
-        // State
-        let allVocab = []; 
-        let currentSession = []; 
-        let currentIndex = 0;
-        let isFlipped = false;
-        
-        let correctWords = new Set(); 
-        let incorrectWords = new Set();
-        
-        let sessionResults = {
-            correct: [],
-            incorrect: []
-        };
-
-        // Fonction pour ajouter automatiquement les balises $$ si du code LaTeX brut est détecté
-        function autoFormatLatex(text) {
-            text = String(text || '');
-            if ((text.includes('\\') || text.includes('^') || text.includes('_')) && !text.includes('$') && !text.includes('\\(') && !text.includes('\\[')) {
-                return `$$${text}$$`;
-            }
-            return text;
+function handleFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    try {
+      const wb = XLSX.read(evt.target.result, { type: 'array' });
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 });
+      allVocab = [];
+      rows.forEach(row => {
+        if (row && row.length >= 2) {
+          const q = String(row[0] ?? '').trim(), r = String(row[1] ?? '').trim();
+          if (q && r) allVocab.push({ col1: q, col2: r });
         }
+      });
+      if (!allVocab.length) throw new Error("Aucune donnée valide trouvée. Vérifiez que le fichier contient au moins 2 colonnes.");
+      const h = allVocab[0].col1.toLowerCase();
+      if (['question', 'questions', 'quest', 'english', 'anglais'].includes(h)) allVocab.shift();
+      if (!allVocab.length) throw new Error("Le fichier ne contient que des en-têtes.");
+      importError.classList.add('hidden');
+      totalLoaded.textContent = `${allVocab.length} ${plural(allVocab.length, 'carte chargée', 'cartes chargées')}`;
+      showView('settings');
+    } catch (err) {
+      importError.textContent = err.message || "Erreur de lecture du fichier. Vérifiez son format.";
+      importError.classList.remove('hidden');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+$('fileInput').addEventListener('change', e => { handleFile(e.target.files[0]); e.target.value = ''; });
+const drop = $('drop');
+['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => handleFile(e.dataTransfer.files[0]));
 
-        // DOM Elements
-        const views = {
-            import: document.getElementById('view-import'),
-            settings: document.getElementById('view-settings'),
-            flashcard: document.getElementById('view-flashcard'),
-            stats: document.getElementById('view-stats')
-        };
+/* ===== Session ===== */
+$('startBtn').addEventListener('click', () => {
+  const side = document.querySelector('input[name="frontSide"]:checked').value;
+  let limit = document.querySelector('input[name="cardLimit"]:checked')?.value || 'all';
+  const custom = parseInt($('customLimit').value);
+  limit = custom > 0 ? custom : (limit === 'all' ? 'all' : parseInt(limit));
+  startSession(allVocab, side, limit);
+});
 
-        // Theme Toggle Logic
-        const themeToggleBtn = document.getElementById('themeToggle');
-        const htmlElement = document.documentElement;
-        
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            htmlElement.classList.add('dark');
-        } else {
-            htmlElement.classList.remove('dark');
-        }
+function startSession(pool, sidePref, limit) {
+  sessionResults = { correct: [], incorrect: [] };
+  currentIndex = 0; isFlipped = false;
+  cardInner.classList.remove('flipped');
 
-        themeToggleBtn.addEventListener('click', () => {
-            htmlElement.classList.toggle('dark');
-            if (htmlElement.classList.contains('dark')) {
-                localStorage.theme = 'dark';
-            } else {
-                localStorage.theme = 'light';
-            }
-        });
+  let list = shuffleArray([...pool]);
+  if (typeof limit === 'number') list = list.slice(0, limit);
+  if (!list.length) { alert("Aucune carte disponible !"); return; }
 
-        function showView(viewName) {
-            Object.values(views).forEach(v => {
-                v.classList.add('hidden-view');
-                v.classList.remove('animate-fade-in');
-            });
-            views[viewName].classList.remove('hidden-view');
-            void views[viewName].offsetWidth;
-            views[viewName].classList.add('animate-fade-in');
-        }
+  currentSession = list.map(item => {
+    const side = sidePref === 'random' ? (Math.random() > .5 ? 'q' : 'r') : sidePref;
+    return side === 'q'
+      ? { original: item, front: item.col1, back: item.col2, frontLang: 'Quest', backLang: 'Rep' }
+      : { original: item, front: item.col2, back: item.col1, frontLang: 'Rep', backLang: 'Quest' };
+  });
 
-        function shuffleArray(array) {
-            let curId = array.length;
-            while (0 !== curId) {
-                let randId = Math.floor(Math.random() * curId);
-                curId -= 1;
-                let tmp = array[curId];
-                array[curId] = array[randId];
-                array[randId] = tmp;
-            }
-            return array;
-        }
+  $('totalSessionCards').textContent = currentSession.length;
+  showView('flashcard');
+  renderCard();
+}
 
-        const fileInput = document.getElementById('fileInput');
-        const importError = document.getElementById('importError');
-        const totalWordsLoaded = document.getElementById('totalWordsLoaded');
+function renderCard() {
+  const card = currentSession[currentIndex];
+  if (isFlipped) {
+    cardInner.classList.remove('flipped');
+    isFlipped = false;
+    setTimeout(() => updateCardText(card), 300);
+  } else updateCardText(card);
+  $('currentCardCount').textContent = currentIndex + 1;
+  $('btnPrev').disabled = currentIndex === 0;
+}
 
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+function updateCardText(card) {
+  [[card.front, card.frontLang], [card.back, card.backLang]].forEach(([raw, lang], i) => {
+    const f = faces[i];
+    f.text.textContent = autoFormatLatex(raw);
+    f.tag.textContent = lang;
+    renderLatex(f.text);
+    f.warn.classList.toggle('hidden', !hasLatexProblem(autoFormatLatex(raw), f.text));
+    fitText(f.text);
+  });
+}
 
-            const reader = new FileReader();
-            
-            reader.onload = (evt) => {
-                try {
-                    const data = evt.target.result;
-                    const workbook = XLSX.read(data, { type: 'binary' });
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
-                    
-                    const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                    
-                    allVocab = [];
-                    for (let i = 0; i < rows.length; i++) {
-                        const row = rows[i];
-                        if (row && row.length >= 2) {
-                            const val1 = String(row[0] || '').trim();
-                            const val2 = String(row[1] || '').trim();
-                            if (val1 && val2) {
-                                allVocab.push({ col1: val1, col2: val2 });
-                            }
-                        }
-                    }
+function flipCard() { isFlipped = !isFlipped; cardInner.classList.toggle('flipped', isFlipped); }
+$('flashcardContainer').addEventListener('click', flipCard);
 
-                    if (allVocab.length === 0) {
-                        throw new Error("No valid data found. Make sure you have at least 2 columns.");
-                    }
+document.addEventListener('keydown', e => {
+  if (views.flashcard.classList.contains('hidden')) return;
+  if (e.code === 'Space') { e.preventDefault(); flipCard(); }
+  else if (e.code === 'ArrowRight') handleNext();
+  else if (e.code === 'ArrowLeft') handlePrev();
+});
 
-                    const r0 = allVocab[0];
-                    if (r0.col1.toLowerCase() === 'english' || r0.col1.toLowerCase() === 'anglais') {
-                        allVocab.shift();
-                    }
+function recordAnswer(ok) {
+  const o = currentSession[currentIndex].original;
+  sessionResults.correct = sessionResults.correct.filter(c => c !== o);
+  sessionResults.incorrect = sessionResults.incorrect.filter(c => c !== o);
+  (ok ? sessionResults.correct : sessionResults.incorrect).push(o);
+  handleNext();
+}
+function handleNext() { currentIndex < currentSession.length - 1 ? (currentIndex++, renderCard()) : endSession(); }
+function handlePrev() { if (currentIndex > 0) { currentIndex--; renderCard(); } }
 
-                    importError.classList.add('hidden');
-                    totalWordsLoaded.textContent = `${allVocab.length} words loaded`;
-                    showView('settings');
-                    
-                } catch (error) {
-                    importError.textContent = error.message || "Error reading file. Please check format.";
-                    importError.classList.remove('hidden');
-                }
-            };
-            
-            reader.readAsBinaryString(file);
-            e.target.value = '';
-        });
+$('btnCorrect').addEventListener('click', () => recordAnswer(true));
+$('btnIncorrect').addEventListener('click', () => recordAnswer(false));
+$('btnNext').addEventListener('click', handleNext);
+$('btnPrev').addEventListener('click', handlePrev);
+$('btnEndEarly').addEventListener('click', endSession);
 
-        const startBtn = document.getElementById('startBtn');
-        
-        startBtn.addEventListener('click', () => {
-            const frontSidePref = document.querySelector('input[name="frontSide"]:checked').value;
-            let limitPref = document.querySelector('input[name="cardLimit"]:checked')?.value || 'all';
-            
-            const customLimitInput = document.getElementById('customLimit').value;
-            if (customLimitInput && parseInt(customLimitInput) > 0) {
-                limitPref = parseInt(customLimitInput);
-            } else if (limitPref !== 'all') {
-                limitPref = parseInt(limitPref);
-            }
+/* ===== Bilan ===== */
+$('btnRestartFull').addEventListener('click', () => showView('settings'));
+$('btnNewFile').addEventListener('click', () => { allVocab = []; totalLoaded.textContent = '0 carte chargée'; showView('import'); });
+$('btnRetryIncorrect').addEventListener('click', () => {
+  startSession(sessionResults.incorrect, document.querySelector('input[name="frontSide"]:checked').value, 'all');
+});
 
-            startSession(allVocab, frontSidePref, limitPref);
-        });
+function endSession() {
+  showView('stats');
+  $('statCorrectCount').textContent = sessionResults.correct.length;
+  $('statIncorrectCount').textContent = sessionResults.incorrect.length;
+  renderList($('listCorrect'), sessionResults.correct, 'g');
+  renderList($('listIncorrect'), sessionResults.incorrect, 'r');
+  $('btnRetryIncorrect').classList.toggle('hidden', !sessionResults.incorrect.length);
+}
 
-        function startSession(pool, sidePref, limit) {
-            sessionResults = { correct: [], incorrect: [] };
-            currentIndex = 0;
-            isFlipped = false;
-
-            let poolCopy = [...pool];
-            shuffleArray(poolCopy);
-
-            if (limit !== 'all' && typeof limit === 'number') {
-                poolCopy = poolCopy.slice(0, limit);
-            }
-
-            if(poolCopy.length === 0) {
-                alert("No words available!");
-                return;
-            }
-
-            currentSession = poolCopy.map(word => {
-                let front, back, frontLang, backLang;
-                
-                let determineSide = sidePref;
-                if (determineSide === 'random') {
-                    determineSide = Math.random() > 0.5 ? 'en' : 'fr';
-                }
-
-                if (determineSide === 'en') {
-                    front = word.col1;
-                    back = word.col2;
-                    frontLang = "Col 1 (EN)";
-                    backLang = "Col 2 (FR)";
-                } else {
-                    front = word.col2;
-                    back = word.col1;
-                    frontLang = "Col 2 (FR)";
-                    backLang = "Col 1 (EN)";
-                }
-
-                return {
-                    original: word,
-                    front, 
-                    back, 
-                    frontLang, 
-                    backLang
-                };
-            });
-
-            document.getElementById('totalSessionCards').textContent = currentSession.length;
-            
-            renderCard();
-            showView('flashcard');
-        }
-
-        const flashcardContainer = document.getElementById('flashcardContainer');
-        const cardInner = document.getElementById('cardInner');
-        const cardFrontText = document.getElementById('cardFrontText');
-        const cardFrontLang = document.getElementById('cardFrontLang');
-        const cardBackText = document.getElementById('cardBackText');
-        const cardBackLang = document.getElementById('cardBackLang');
-        
-        const btnPrev = document.getElementById('btnPrev');
-        const btnNext = document.getElementById('btnNext');
-        const btnCorrect = document.getElementById('btnCorrect');
-        const btnIncorrect = document.getElementById('btnIncorrect');
-        const btnEndEarly = document.getElementById('btnEndEarly');
-
-        function renderCard() {
-            const card = currentSession[currentIndex];
-            
-            if(isFlipped) {
-                cardInner.classList.remove('is-flipped');
-                isFlipped = false;
-                setTimeout(() => updateCardText(card), 300); 
-            } else {
-                updateCardText(card);
-            }
-            
-            document.getElementById('currentCardCount').textContent = currentIndex + 1;
-            btnPrev.disabled = currentIndex === 0;
-            
-            [cardFrontText, cardBackText].forEach(el => {
-                const len = el.textContent.length;
-                if(len > 30) el.className = "text-2xl sm:text-3xl font-bold text-center break-words w-full";
-                else if(len > 15) el.className = "text-3xl sm:text-4xl font-bold text-center break-words w-full";
-                else el.className = "text-4xl sm:text-5xl md:text-6xl font-bold text-center break-words w-full";
-                
-                if(el === cardBackText) el.classList.add('text-blue-600', 'dark:text-blue-400');
-            });
-        }
-
-        function updateCardText(card) {
-            let frontText = String(card.front);
-            let backText = String(card.back);
-
-            cardFrontText.textContent = autoFormatLatex(frontText);
-            cardFrontLang.textContent = card.frontLang;
-            cardBackText.textContent = autoFormatLatex(backText);
-            cardBackLang.textContent = card.backLang;
-
-            if (window.renderMathInElement) {
-                const katexOptions = {
-                    delimiters: [
-                        {left: '$$', right: '$$', display: true},
-                        {left: '$', right: '$', display: false},
-                        {left: '\\(', right: '\\)', display: false},
-                        {left: '\\[', right: '\\]', display: true}
-                    ],
-                    throwOnError: false
-                };
-                
-                renderMathInElement(cardFrontText, katexOptions);
-                renderMathInElement(cardBackText, katexOptions);
-            }
-        }
-
-        function flipCard() {
-            isFlipped = !isFlipped;
-            cardInner.classList.toggle('is-flipped', isFlipped);
-        }
-
-        flashcardContainer.addEventListener('click', flipCard);
-
-        document.addEventListener('keydown', (e) => {
-            if (views.flashcard.classList.contains('hidden-view')) return;
-            
-            if (e.code === 'Space') {
-                e.preventDefault(); 
-                flipCard();
-            } else if (e.code === 'ArrowRight') {
-                handleNext();
-            } else if (e.code === 'ArrowLeft') {
-                handlePrev();
-            }
-        });
-
-        function recordAnswer(isCorrect) {
-            const card = currentSession[currentIndex];
-            
-            sessionResults.correct = sessionResults.correct.filter(c => c !== card.original);
-            sessionResults.incorrect = sessionResults.incorrect.filter(c => c !== card.original);
-
-            if (isCorrect) {
-                sessionResults.correct.push(card.original);
-                correctWords.add(card.original);
-                incorrectWords.delete(card.original);
-            } else {
-                sessionResults.incorrect.push(card.original);
-                incorrectWords.add(card.original);
-                correctWords.delete(card.original);
-            }
-
-            handleNext();
-        }
-
-        function handleNext() {
-            if (currentIndex < currentSession.length - 1) {
-                currentIndex++;
-                renderCard();
-            } else {
-                endSession();
-            }
-        }
-
-        function handlePrev() {
-            if (currentIndex > 0) {
-                currentIndex--;
-                renderCard();
-            }
-        }
-
-        btnCorrect.addEventListener('click', () => recordAnswer(true));
-        btnIncorrect.addEventListener('click', () => recordAnswer(false));
-        btnNext.addEventListener('click', handleNext);
-        btnPrev.addEventListener('click', handlePrev);
-        btnEndEarly.addEventListener('click', endSession);
-
-        const statCorrectCount = document.getElementById('statCorrectCount');
-        const statIncorrectCount = document.getElementById('statIncorrectCount');
-        const listCorrect = document.getElementById('listCorrect');
-        const listIncorrect = document.getElementById('listIncorrect');
-        const btnRetryIncorrect = document.getElementById('btnRetryIncorrect');
-        
-        document.getElementById('btnRestartFull').addEventListener('click', () => showView('settings'));
-        document.getElementById('btnNewFile').addEventListener('click', () => {
-            allVocab = [];
-            totalWordsLoaded.textContent = '0 words loaded';
-            showView('import');
-        });
-
-        function endSession() {
-            showView('stats');
-            
-            statCorrectCount.textContent = sessionResults.correct.length;
-            statIncorrectCount.textContent = sessionResults.incorrect.length;
-
-            renderList(listCorrect, sessionResults.correct, 'green');
-            renderList(listIncorrect, sessionResults.incorrect, 'red');
-
-            if (sessionResults.incorrect.length > 0) {
-                btnRetryIncorrect.classList.remove('hidden');
-            } else {
-                btnRetryIncorrect.classList.add('hidden');
-            }
-        }
-
-        function renderList(container, array, color) {
-            container.innerHTML = '';
-            if (array.length === 0) {
-                container.innerHTML = `<p class="text-gray-400 dark:text-gray-500 text-sm italic py-2">No words in this category.</p>`;
-                return;
-            }
-
-            const bgClass = color === 'green' ? 'bg-green-50 dark:bg-green-900/10 border-green-100 dark:border-green-900/30' : 'bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900/30';
-            const textClass = color === 'green' ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200';
-
-            array.forEach(item => {
-                const div = document.createElement('div');
-                div.className = `p-3 rounded-xl border flex flex-col sm:flex-row justify-between sm:items-center text-sm ${bgClass}`;
-                div.innerHTML = `
-                    <span class="font-bold ${textClass}">${autoFormatLatex(item.col1)}</span>
-                    <i class="fa-solid fa-arrow-right-arrow-left text-gray-300 dark:text-gray-600 hidden sm:block mx-2 text-xs"></i>
-                    <span class="${textClass} opacity-80">${autoFormatLatex(item.col2)}</span>
-                `;
-                container.appendChild(div);
-            });
-
-            // Rendu LaTeX pour la liste récapitulative
-            if (window.renderMathInElement) {
-                const katexOptions = {
-                    delimiters: [
-                        {left: '$$', right: '$$', display: false},
-                        {left: '$', right: '$', display: false},
-                        {left: '\\(', right: '\\)', display: false},
-                        {left: '\\[', right: '\\]', display: false}
-                    ],
-                    throwOnError: false
-                };
-                renderMathInElement(container, katexOptions);
-            }
-        }
-
-        btnRetryIncorrect.addEventListener('click', () => {
-            const frontSidePref = document.querySelector('input[name="frontSide"]:checked').value;
-            startSession(sessionResults.incorrect, frontSidePref, 'all');
-        });
-
-    </script>
+function renderList(container, items, kind) {
+  container.innerHTML = '';
+  if (!items.length) {
+    const p = document.createElement('p'); p.className = 'empty'; p.textContent = 'Aucune carte dans cette catégorie.';
+    container.appendChild(p); return;
+  }
+  items.forEach(it => {
+    const row = document.createElement('div'); row.className = 'item ' + kind;
+    const a = document.createElement('span'); a.className = 'a'; a.textContent = autoFormatLatex(it.col1);
+    const b = document.createElement('span'); b.className = 'b'; b.textContent = autoFormatLatex(it.col2);
+    row.append(a, b); container.appendChild(row);
+  });
+  renderLatex(container);
+}
+</script>
 </body>
 </html>
